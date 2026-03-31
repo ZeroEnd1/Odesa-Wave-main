@@ -1,0 +1,94 @@
+{
+  "project_name": "Odesa Wave (Wave UA)",
+  "theme": "Dynamic (Light Sunny Default, Dark Storm Alert Mode)",
+  "archetype": "Archetype 4 (Swiss & High-Contrast) + Organic/Coastal Twist",
+  "typography": {
+    "heading_font": "Manrope",
+    "body_font": "IBM Plex Sans",
+    "heading_classes": "font-extrabold tracking-tight",
+    "body_classes": "font-normal leading-relaxed",
+    "scale": {
+      "h1": "text-4xl sm:text-5xl",
+      "h2": "text-2xl sm:text-3xl",
+      "h3": "text-xl sm:text-2xl",
+      "body": "text-base",
+      "small": "text-sm uppercase tracking-[0.2em]"
+    }
+  },
+  "colors": {
+    "sunny_mode": {
+      "background": "#F2F5F8",
+      "surface": "#FFFFFF",
+      "surface_glass": "rgba(255, 255, 255, 0.7)",
+      "primary": "#005BBB",
+      "primary_hover": "#004B99",
+      "accent_gold": "#FFD500",
+      "text_primary": "#0A1128",
+      "text_secondary": "#4A5568",
+      "border": "rgba(0, 91, 187, 0.1)"
+    },
+    "storm_mode": {
+      "background": "#0F0F11",
+      "surface": "#1A1A1D",
+      "surface_glass": "rgba(26, 26, 29, 0.8)",
+      "primary": "#FF3B30",
+      "primary_hover": "#D62828",
+      "accent_orange": "#FF9F0A",
+      "text_primary": "#FFFFFF",
+      "text_secondary": "#A0AEC0",
+      "border": "rgba(255, 59, 48, 0.3)"
+    }
+  },
+  "layout_spacing": {
+    "container": "w-full max-w-md mx-auto h-[100dvh] flex flex-col bg-background relative overflow-hidden text-foreground",
+    "bento_gap": "gap-4",
+    "widget_padding": "p-6",
+    "border_radius": "rounded-3xl",
+    "bottom_nav_height": "h-20"
+  },
+  "surface_strategies": {
+    "widgets": "Sunny Mode: Glassmorphism (backdrop-blur-xl bg-white/70 border border-white/40 shadow-sm). Storm Mode: Solid Tactile (bg-[#1A1A1D] border border-red-500/20 shadow-[0_0_15px_rgba(255,59,48,0.1)]).",
+    "panic_button": "Red background, heavy drop shadow, surrounded by pinging concentric rings (animate-ping) for high urgency.",
+    "bottom_nav": "Fixed bottom, backdrop-blur-2xl bg-white/80 (Sunny) or bg-black/80 (Storm), border-t border-border."
+  },
+  "components": {
+    "dashboard_grid": "Mode B: 'Control Room' grid layout adapted for mobile bento. Primary widgets (Transport/Alerts) span full width, secondary (Weather/Status) span half width.",
+    "wave_effect": "Implement subtle Y-axis staggered animations on scroll/load. Use Framer Motion variants to mimic a wave rolling in.",
+    "light_heatmap": "Dark background container with overlapping absolute positioned glowing yellow radial gradients to simulate power grid.",
+    "chatbot": "Floating action button with 'Uncle Zhora' avatar icon. Chat modal opens with slide-up motion.",
+    "qr_ticket": "Center-aligned card with high-contrast QR code, bold typography for transport routes, and a scanning border effect."
+  },
+  "motion": {
+    "buttons": "active:scale-95 transition-transform duration-200",
+    "page_transition": "Framer Motion slide in from bottom with spring physics",
+    "water_splash": "Use Framer Motion to create a ripple effect on tap (scale up an absolute circle with opacity fade)."
+  },
+  "media": {
+    "image_urls": [
+      {
+        "url": "https://images.unsplash.com/photo-1761311554801-ddaebf8b420a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwyfHxvZGVzYSUyMHVrcmFpbmUlMjBsYW5kbWFya3xlbnwwfHx8fDE3NzQ0NzM1MjV8MA&ixlib=rb-4.1.0&q=85",
+        "category": "hero_background",
+        "description": "Monumental statue. Use as subtle background in the profile or services header."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1574885174205-a0384b5bcb24?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwxfHxibGFjayUyMHNlYSUyMHdhdmVzfGVufDB8fHx8MTc3NDQ3MzUyN3ww&ixlib=rb-4.1.0&q=85",
+        "category": "dashboard_wave_background",
+        "description": "Calm sea water. Overlay with white/blue gradient for Sunny mode dashboard background."
+      }
+    ]
+  },
+  "accessibility": {
+    "contrast": "Ensure all text against wave/storm backgrounds meets WCAG AA 4.5:1. Storm mode neon red must be legible against deep grey.",
+    "test_ids": "Add data-testid to all widgets, nav items, and the panic button (e.g., data-testid='panic-button').",
+    "motion_preference": "Respect prefers-reduced-motion for the wave scroll inertia and pinging alerts."
+  },
+  "instructions_to_main_agent": [
+    "This is a mobile-first hybrid app. Set up the main layout as a centered max-w-md column (mocking a mobile screen) on desktop, or full width on mobile viewports.",
+    "Implement a global Theme Context that toggles between 'sunny' and 'storm' modes based on a simulated 'air raid alert' state toggle in the UI.",
+    "Sunny mode: use a blue-to-white subtle gradient background with glassmorphic bento cards.",
+    "Storm mode: force the theme to dark, change primary accents to #FF3B30 (Neon Red), and apply a subtle red border glow to critical widgets.",
+    "For the SentryNode Panic Button, use a full-width block or large circular button with a pulsating background layer to draw immediate attention.",
+    "Mock the 'Where's Light' map using an interactive container with scattered glowing dots on a dark abstract map SVG.",
+    "Use lucide-react for all iconography (waves, trams, shields, lightbulbs, navigation tabs)."
+  ]
+}
