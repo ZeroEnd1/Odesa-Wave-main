@@ -15,6 +15,10 @@ from datetime import datetime, timezone, timedelta
 import bcrypt
 import secrets
 from contextlib import asynccontextmanager
+import google.genai as genai
+
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
 
 try:
     from jose import jwt, JWTError
@@ -22,16 +26,10 @@ try:
 except ImportError:
     HAS_JOSE = False
 
-try:
-    from emergentintegrations.llm.chat import LlmChat, UserMessage
+HAS_LLM = False
+EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+if EMERGENT_LLM_KEY:
     HAS_LLM = True
-except ImportError:
-    HAS_LLM = False
-    LlmChat = None
-    UserMessage = None
-
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
 
 # Fallback data for demo mode (when MongoDB unavailable)
 _fallback_data: dict = {}
@@ -106,7 +104,6 @@ _init_fallback_data()
 db = None
 
 # Keys
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
 ALERTS_TOKEN = os.environ.get('ALERTS_IN_UA_TOKEN', '')
 JWT_SECRET = os.environ.get('JWT_SECRET_KEY', '')
 JWT_ALGORITHM = 'HS256'
@@ -1090,17 +1087,19 @@ async def chat_with_zhora(data: ChatRequest):
             "Ти знаєш все про Одесу — від Привозу до Аркадії. Відповідай коротко, по суті, "
             "з теплотою та легким гумором. Якщо не знаєш відповіді — скажи про це чесно."
         )
-        chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=data.session_id, system_message=system_msg)
-        chat.with_model("openai", "gpt-4o")
-
-        response = await chat.send_message(UserMessage(text=data.message))
+        client = genai.Client(api_key=EMERGENT_LLM_KEY)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[{"role": "user", "parts": [{"text": f"{system_msg}\n\n{data.message}"}]}]
+        )
+        reply = response.text
 
         now = datetime.now(timezone.utc).isoformat()
         await db.chat_messages.insert_many([
             {"session_id": data.session_id, "role": "user", "content": data.message, "timestamp": now},
-            {"session_id": data.session_id, "role": "assistant", "content": response, "timestamp": now}
+            {"session_id": data.session_id, "role": "assistant", "content": reply, "timestamp": now}
         ])
-        return ChatResponse(response=response, session_id=data.session_id)
+        return ChatResponse(response=reply, session_id=data.session_id)
     except Exception as e:
         logger.error(f"Chat error: {e}")
         raise HTTPException(status_code=500, detail=f"Дядя Жора зараз відпочиває: {str(e)}")
