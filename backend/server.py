@@ -108,11 +108,11 @@ db = None
 # Keys
 EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
 ALERTS_TOKEN = os.environ.get('ALERTS_IN_UA_TOKEN', '')
-JWT_SECRET = os.environ.get('JWT_SECRET_KEY', 'odesa-wave-jwt-secret-key-2026')
+JWT_SECRET = os.environ.get('JWT_SECRET_KEY', '')
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = 72
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
-SAVEECOBOT_TOKEN = os.environ.get('SAVEECOBOT_TOKEN', 'IZRjpdoiVgzV1mJP6biBj8TiooursH3p')
+SAVEECOBOT_TOKEN = os.environ.get('SAVEECOBOT_TOKEN', '')
 
 def lifespan(app: FastAPI):
     return _lifespan_inner(app)
