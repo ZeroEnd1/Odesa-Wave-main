@@ -23,9 +23,15 @@ export default function ServicesScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const loadServices = useCallback(async () => {
+    const cached = api.getCachedData('/services');
+    if (cached) {
+      setServices(Array.isArray(cached) ? cached : []);
+      setLoading(false);
+      return;
+    }
     try {
       const data = await api.get('/services');
-      setServices(data);
+      setServices(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Services load error:', err);
     } finally {

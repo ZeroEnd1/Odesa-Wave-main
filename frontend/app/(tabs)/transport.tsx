@@ -24,13 +24,13 @@ export default function TransportScreen() {
   const loadData = useCallback(async () => {
     try {
       const [r, t, b] = await Promise.all([
-        api.get('/transport/routes'),
-        api.get('/transport/tickets'),
-        api.get('/transport/bridges'),
+        api.get('/transport/routes', true).catch((err) => { console.warn('routes:', err); return []; }),
+        api.get('/transport/tickets', false).catch((err) => { console.warn('tickets:', err); return []; }),
+        api.get('/transport/bridges', true).catch((err) => { console.warn('bridges:', err); return []; }),
       ]);
-      setRoutes(r);
-      setTickets(t);
-      setBridges(b);
+      setRoutes(Array.isArray(r) ? r : []);
+      setTickets(Array.isArray(t) ? t : []);
+      setBridges(Array.isArray(b) ? b : []);
     } catch (err) {
       console.error('Transport data error:', err);
     } finally {
@@ -211,7 +211,9 @@ export default function TransportScreen() {
               <View style={styles.qrContent}>
                 <Text style={[styles.qrRoute, { color: colors.textPrimary }]}>{selectedTicket.route_name}</Text>
                 <View style={[styles.qrCodeWrap, { backgroundColor: '#FFF', borderColor: colors.primary }]}>
-                  <QRCode value={selectedTicket.qr_data || 'ODESA-WAVE'} size={200} />
+                  <View style={{ backgroundColor: '#FFF', padding: 16, borderRadius: 12 }}>
+                    <QRCode value={selectedTicket.qr_data || 'ODESA-WAVE'} size={180} backgroundColor="#FFF" />
+                  </View>
                 </View>
                 <Text style={[styles.qrCode, { color: colors.primary }]}>{selectedTicket.qr_data}</Text>
                 <Text style={[styles.qrPrice, { color: colors.textSecondary }]}>{selectedTicket.price} грн</Text>

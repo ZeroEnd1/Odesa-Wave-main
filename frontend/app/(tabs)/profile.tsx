@@ -6,12 +6,16 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/context/ThemeContext';
+import { useAuth } from '../../src/context/AuthContext';
 import { api } from '../../src/utils/api';
+import { useRouter } from 'expo-router';
 
 const BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
 export default function ProfileScreen() {
   const { colors, isStorm, toggleStorm } = useTheme();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [panicLoading, setPanicLoading] = useState(false);
   const [lightLoading, setLightLoading] = useState(false);
   const [panicAddress, setPanicAddress] = useState('');
@@ -40,7 +44,6 @@ export default function ProfileScreen() {
 
         ws.onopen = () => {
           setWsConnected(true);
-          // Send heartbeat
           const pingInterval = setInterval(() => {
             if (ws.readyState === WebSocket.OPEN) ws.send('ping');
           }, 25000);
@@ -56,7 +59,6 @@ export default function ProfileScreen() {
             const data = JSON.parse(event.data);
             if (data.type === 'panic') {
               setLastAlarm(data);
-              // Trigger alarm animation
               Animated.sequence([
                 Animated.timing(alarmAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
                 Animated.timing(alarmAnim, { toValue: 0, duration: 5000, useNativeDriver: true }),
@@ -151,6 +153,13 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleLogout = () => {
+    Alert.alert('Вихід', 'Ви впевнені, що хочете вийти?', [
+      { text: 'Скасувати', style: 'cancel' },
+      { text: 'Вийти', style: 'destructive', onPress: logout },
+    ]);
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} testID="profile-screen">
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -159,9 +168,45 @@ export default function ProfileScreen() {
           <View style={[styles.avatar, { backgroundColor: colors.primary + '15' }]}>
             <Ionicons name="person" size={36} color={colors.primary} />
           </View>
-          <Text style={[styles.userName, { color: colors.textPrimary }]}>Одесит</Text>
-          <Text style={[styles.userCity, { color: colors.textSecondary }]}>м. Одеса</Text>
+          {user ? (
+            <>
+              <Text style={[styles.userName, { color: colors.textPrimary }]}>{user.name}</Text>
+              <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{user.email}</Text>
+              <View style={[styles.authBadge, { backgroundColor: user.auth_provider === 'google' ? '#DB4437' + '15' : colors.primary + '15' }]}>
+                <Ionicons name={user.auth_provider === 'google' ? 'logo-google' : 'mail'} size={12} color={user.auth_provider === 'google' ? '#DB4437' : colors.primary} />
+                <Text style={[styles.authBadgeText, { color: user.auth_provider === 'google' ? '#DB4437' : colors.primary }]}>
+                  {user.auth_provider === 'google' ? 'Google' : 'Email'}
+                </Text>
+              </View>
+            </>
+          ) : (
+            <>
+              <Text style={[styles.userName, { color: colors.textPrimary }]}>Одесит</Text>
+              <Text style={[styles.userCity, { color: colors.textSecondary }]}>м. Одеса</Text>
+              <TouchableOpacity
+                onPress={() => router.push('/(auth)/login')}
+                style={[styles.loginBtn, { backgroundColor: colors.primary }]}
+              >
+                <Ionicons name="log-in-outline" size={18} color="#FFF" />
+                <Text style={styles.loginBtnText}>Увійти</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => router.push('/(auth)/register')}
+                style={[styles.registerBtn, { borderColor: colors.primary }]}
+              >
+                <Text style={[styles.registerBtnText, { color: colors.primary }]}>Зареєструватися</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
+
+        {/* Logout button */}
+        {user && (
+          <TouchableOpacity onPress={handleLogout} style={[styles.logoutBtn, { borderColor: colors.border }]}>
+            <Ionicons name="log-out-outline" size={18} color={colors.danger} />
+            <Text style={[styles.logoutText, { color: colors.danger }]}>Вийти</Text>
+          </TouchableOpacity>
+        )}
 
         {/* WebSocket Status */}
         <View style={[styles.wsStatusBar, { backgroundColor: wsConnected ? '#34C759' + '15' : colors.surface, borderColor: wsConnected ? '#34C759' + '30' : colors.border }]}>
@@ -315,7 +360,8 @@ export default function ProfileScreen() {
         <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Про застосунок</Text>
           <Text style={[styles.infoText, { color: colors.textSecondary }]}>Odesa Wave v2.0</Text>
-          <Text style={[styles.infoText, { color: colors.textSecondary }]}>Інтеграції: alerts.in.ua • Copernicus Marine • GPT-4o</Text>
+          <Text style={[styles.infoText, { color: colors.textSecondary }]}>Інтеграції: alerts.in.ua • Copernicus Marine • Open-Meteo</Text>
+          <Text style={[styles.infoText, { color: colors.textSecondary }]}>SaveEcoBot • OpenStreetMap • GPT-4o</Text>
           <Text style={[styles.infoText, { color: colors.textSecondary }]}>Real-time: WebSocket SentryNode</Text>
           <Text style={[styles.infoText, { color: colors.textSecondary }]}>Зроблено з ❤️ для одеситів</Text>
         </View>
@@ -331,6 +377,15 @@ const styles = StyleSheet.create({
   avatar: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   userName: { fontSize: 24, fontWeight: '800' },
   userCity: { fontSize: 15, marginTop: 2 },
+  userEmail: { fontSize: 14, marginTop: 2 },
+  authBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginTop: 6 },
+  authBadgeText: { fontSize: 11, fontWeight: '600' },
+  loginBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 14, marginTop: 10 },
+  loginBtnText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
+  registerBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 14, borderWidth: 1, marginTop: 8 },
+  registerBtnText: { fontSize: 15, fontWeight: '600' },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 14, borderWidth: 1 },
+  logoutText: { fontSize: 14, fontWeight: '600' },
   wsStatusBar: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 14, borderWidth: 1 },
   wsIndicator: { width: 10, height: 10, borderRadius: 5 },
   wsStatusText: { fontSize: 14, fontWeight: '600', flex: 1 },
